@@ -36,7 +36,7 @@
         <!-- END SIDEBAR TOGGLER BUTTON -->
         <!-- BEGIN LOGO -->
         <div class="logo">
-                <img src="{{ asset('assets/images/logo/logo.png') }}" width="200px" /> 
+                <img src="{{ asset('assets/images/logo/icon.png') }}" width="200px" /> 
         </div>
         <!-- END LOGO -->
         <!-- BEGIN LOGIN -->
