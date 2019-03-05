@@ -10,7 +10,9 @@
         "hesto/multi-auth": "^2.0",
         "laravel/framework": "5.5.*",
         "laravel/tinker": "~1.0",
-        "stripe/stripe-php": "^5.6"
+        "orchid/socket": "^1.7",
+        "stripe/stripe-php": "^5.6",
+      "ext-pcntl": "*"
     },
     "require-dev": {
         "filp/whoops": "~2.0",

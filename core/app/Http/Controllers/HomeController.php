@@ -23,6 +23,10 @@ use Session;
 use Hash;
 use App\Lib\GoogleAuthenticator;
 
+use App\Balance;
+use App\Utility\BitcoinConvert;
+use App\Utility\Bitcoin;
+
 
 
 class HomeController extends Controller
@@ -44,6 +48,7 @@ class HomeController extends Controller
         $all = file_get_contents("https://blockchain.info/ticker");
         $res = json_decode($all);
         $currentRate = $res->USD->last;
+        $currentUser = Auth::user();
         $price = Price::latest()->first();
 
         $btusd = Auth::user()->bitcoin * $currentRate;
@@ -52,7 +57,7 @@ class HomeController extends Controller
 
         $allprice = Price::orderBy('id', 'ASC')->get();
 
-        return view('home',compact('currentRate','price','totusd','btusd','nusd','allprice'));
+        return view('home',compact('currentRate','price','totusd','btusd','nusd','allprice', 'currentUser'));
     }
 
     public function convert()
@@ -101,14 +106,14 @@ class HomeController extends Controller
         if($avatar == null)
         {
             $this->validate($request, [
-                    'photo' => 'image|mimes:jpeg,png,jpg,gif,svg|max:8000'
-                        ]);
+                'photo' => 'image|mimes:jpeg,png,jpg,gif,svg|max:8000'
+            ]);
 
             if($request->hasFile('photo'))
-                {
-                    $newava['photo'] = Auth::id().'.png';
-                    $request->photo->move('assets/images/avatar',$newava['photo']);
-                }
+            {
+                $newava['photo'] = Auth::id().'.png';
+                $request->photo->move('assets/images/avatar',$newava['photo']);
+            }
             $newava['user_id'] = Auth::id();
 
             Avatar::create($newava);
@@ -117,14 +122,14 @@ class HomeController extends Controller
         else
         {
             $this->validate($request, [
-                    'photo' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048'
-                        ]);
+                'photo' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048'
+            ]);
 
             if($request->hasFile('photo'))
-                {
-                    $avatar['photo'] = Auth::id().'.png';
-                    $request->photo->move('assets/images/avatar',$avatar['photo']);
-                }
+            {
+                $avatar['photo'] = Auth::id().'.png';
+                $request->photo->move('assets/images/avatar',$avatar['photo']);
+            }
 
             $avatar->save();
 
@@ -139,13 +144,13 @@ class HomeController extends Controller
 
         $this->validate($request,
             [
-            'firstname' => 'required|string|max:255',
-            'lastname' => 'required|string|max:255',
-            'address' => 'required|string|max:255',
-            'city' => 'required|string|max:255',
-            'postcode' => 'required|string|max:255',
-            'country' => 'required|string|max:255',
-            'mobile' => 'required|string|max:255',
+                'firstname' => 'required|string|max:255',
+                'lastname' => 'required|string|max:255',
+                'address' => 'required|string|max:255',
+                'city' => 'required|string|max:255',
+                'postcode' => 'required|string|max:255',
+                'country' => 'required|string|max:255',
+                'mobile' => 'required|string|max:255',
 
             ]);
 
@@ -171,29 +176,29 @@ class HomeController extends Controller
     //Documnet Verify
     public function document()
     {
-      return view('front.user.document');  
+        return view('front.user.document');
     }
 
     public function doc_verify(Request $request)
-    {        
-        $this->validate($request, 
+    {
+        $this->validate($request,
             [
-            'name' => 'required',
-            'photo' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:8000',
+                'name' => 'required',
+                'photo' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:8000',
             ]);
 
         $docm['user_id'] = Auth::id();
         $docm['name'] = $request->name;
         $docm['details'] = $request->details;
         if($request->hasFile('photo'))
-            {
-                $docm['photo'] = uniqid().'.'.$request->photo->getClientOriginalExtension();
-                $request->photo->move('assets/images/document',$docm['photo']);
-            }
+        {
+            $docm['photo'] = uniqid().'.'.$request->photo->getClientOriginalExtension();
+            $request->photo->move('assets/images/document',$docm['photo']);
+        }
 
         Docver::create($docm);
 
-        return back()->withSuccess('Verification Request Sent Successfuly!'); 
+        return back()->withSuccess('Verification Request Sent Successfuly!');
 
     }
 
@@ -207,28 +212,28 @@ class HomeController extends Controller
 
     public function chnpass()
     {
-      $user = User::find(Auth::user()->id);
+        $user = User::find(Auth::user()->id);
 
-      if(Hash::check(Input::get('passwordold'), $user['password']) && Input::get('password') == Input::get('password_confirmation'))
-      {
-        $user->password = bcrypt(Input::get('password'));
-        $user->save();
+        if(Hash::check(Input::get('passwordold'), $user['password']) && Input::get('password') == Input::get('password_confirmation'))
+        {
+            $user->password = bcrypt(Input::get('password'));
+            $user->save();
 
-        $msg =  'Password Changed Successfully';
-        send_email($user->email, $user->username, 'Password Changed', $msg);
-        $sms =  'Password Changed Successfully';
-        send_sms($user->mobile, $sms);
+            $msg =  'Password Changed Successfully';
+            send_email($user->email, $user->username, 'Password Changed', $msg);
+            $sms =  'Password Changed Successfully';
+            send_sms($user->mobile, $sms);
 
-        return back()->with('success', 'Password Changed');
-      }
-      else 
-      {
-          return back()->with('alert', 'Password Not Changed');
-      }
+            return back()->with('success', 'Password Changed');
+        }
+        else
+        {
+            return back()->with('alert', 'Password Not Changed');
+        }
     }
 
 
-public function deposit()
+    public function deposit()
     {
         $all = file_get_contents("https://blockchain.info/ticker");
         $res = json_decode($all);
@@ -238,7 +243,38 @@ public function deposit()
         $btusd = Auth::user()->bitcoin * $currentRate;
         $nusd = Auth::user()->balance * $price->price;
         $totusd = $btusd + $nusd;
-        return view('front.user.deposit', compact('btusd','nusd','totusd'));
+
+        $user = User::find(Auth::User()->id);
+
+        //$bitcoin = new Bitcoin(env('BITCOIND_USERNAME'), env('BITCOIND_PASSWORD'), env('BITCOIND_HOST'), env('BITCOIND_PORT'));
+        $orocoin = new Bitcoin(env("ORO_USERNAME", "default_value"),
+            env('ORO_PASSWORD', "default_value"), env('ORO_HOST', "default_value"),
+            env('ORO_PORT', "default_value"));
+        //$dmccoin = new Bitcoin(env('DMC_USERNAME'), env('DMC_PASSWORD'), env('DMC_HOST'), env('DMC_PORT'));
+
+        $oro_address = $orocoin->getaccountaddress(strval(Auth::User()->id));
+
+        $balances = Balance::where('user_id', Auth::User()->id)->first();
+        if($balances === null){
+            $balances['user_id'] = Auth::User()->id;
+            $balances['btc_address'] = 'aaaaaaaaaaaaaaaaaaaaaaa';
+            $balances['btc_balance'] = 0;
+            $balances['oro_address'] = $oro_address;
+            $balances['oro_balance'] = 0;
+            $balances['dmc_address'] = 'ccccccccccccccccccccccc';
+            $balances['dmc_balance'] = 0;
+            $balances['free_balance'] = 10000;
+            Balance::create($balances);
+        }
+        else{
+            if($balances['oro_address']==null || $balances['oro_address']!=$oro_address){
+                $balances['oro_address'] = $oro_address;
+                $balances->save();
+            }
+        }
+        $debug = $oro_address;
+
+        return view('front.user.deposit', compact('btusd','nusd','totusd', 'balances', 'user', 'debug'));
     }
 
     public function refered()
@@ -265,7 +301,7 @@ public function deposit()
     public function create2fa(Request $request)
     {
         $user = User::find(Auth::id());
-        
+
         $this->validate($request,
             [
                 'key' => 'required',
