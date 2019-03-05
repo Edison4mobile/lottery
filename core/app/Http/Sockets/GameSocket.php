@@ -20,7 +20,6 @@ class Timeout
         $this->active = true;
         declare(ticks = 1);
         pcntl_signal(SIGALRM, array($this, 'handle'), true);
-        pcntl_signal(SIGALRM, array($this, 'handle1'), true);
         pcntl_alarm($seconds);
     }
 
