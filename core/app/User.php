@@ -2,6 +2,7 @@
 
 namespace App;
 
+use Illuminate\Contracts\Logging\Log;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
@@ -82,6 +83,12 @@ class User extends Authenticatable
     public function uprefer()
     {
         return $this->hasMany('App\Upgrade', 'id', 'refer_id');
+    }
+
+    public function getBalance($user_id) {
+        $balance = Balance::where('user_id', $user_id)->first();
+        $balance = $balance->refresh();
+        return $balance;
     }
 
    

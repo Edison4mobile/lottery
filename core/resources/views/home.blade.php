@@ -22,6 +22,16 @@
         .table>tbody>tr>td {
             padding: 8px 0 !important;
         }
+        .button-container figure img {
+            -webkit-filter: grayscale(100%);
+            filter: grayscale(50%);
+            -webkit-transition: .3s ease-in-out;
+            transition: .3s ease-in-out;
+        }
+        .button-container figure:hover img {
+            -webkit-filter: grayscale(0);
+            filter: grayscale(0);
+        }
         .play-button {
             width: 40%;
             cursor: pointer;
@@ -122,7 +132,15 @@
                 <div class="stats-icon"><img src="{{ asset('assets/images/coin/btc.png') }}" style="width: 100%;  " alt=""></div>
                 <div class="stats-info">
                     <h4>BitCoin BALANCE</h4>
-                    <p>{{number_format(floatval(Auth::user()->bitcoin) ,  $gset->decimalPoint, '.', '')}}</p>
+                    <p id="btc_balance_text">{{number_format(floatval($currentUser->getBalance(($currentUser->id)) ? $currentUser->getBalance(($currentUser->id))->btc_balance: 0) ,  $gset->decimalPoint, '.', '')}}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12 col-sm-12" style="display: none;" id="free_balance">
+            <div class="widget widget-stats bg-green">
+                <div class="stats-info">
+                    <h4>Free BALANCE</h4>
+                    <p id="free_balance_text">{{number_format(floatval($currentUser->getBalance(($currentUser->id))? $currentUser->getBalance(($currentUser->id))->free_balance: 0) ,  $gset->decimalPoint, '.', '')}}</p>
                 </div>
             </div>
         </div>
@@ -131,7 +149,7 @@
                 <div class="stats-icon"> <img src="{{ asset('assets/images/coin/dmc.png') }}" style="width: 100%; "></div>
                 <div class="stats-info">
                     <h4>DynamicCoin BALANCE</h4>
-                    <p>{{number_format(floatval(Auth::user()->balance) ,  $gset->decimalPoint, '.', '')}}</p>
+                    <p id="dmc_balance_text">{{number_format(floatval($currentUser->getBalance(($currentUser->id))? $currentUser->getBalance(($currentUser->id))->dmc_balance: 0) ,  $gset->decimalPoint, '.', '')}}</p>
                 </div>
             </div>
         </div>
@@ -140,21 +158,21 @@
                 <div class="stats-icon"> <img src="{{ asset('assets/images/coin/oro.png') }}" style="width: 100%; "></div>
                 <div class="stats-info">
                     <h4>Oro BALANCE</h4>
-                    <p>{{number_format(floatval(Auth::user()->balance) , $gset->decimalPoint, '.', '')}}</p>
+                    <p id="oro_balance_text">{{number_format(floatval($currentUser->getBalance(($currentUser->id))? $currentUser->getBalance(($currentUser->id))->oro_balance: 0) , $gset->decimalPoint, '.', '')}}</p>
                 </div>
             </div>
         </div>
-        <div class="col-md-6 col-sm-6" id="play_btc">
-            <img src="{{ asset('assets/images/coin/playBTC.jpg') }}" class="play-button">
+        <div class="col-md-6 col-sm-6 button-container" id="play_free">
+            <figure><img src="{{ asset('assets/images/coin/playfree.jpg') }}" class="play-button"></figure>
         </div>
-        <div class="col-md-6 col-sm-6" id="play_dmc">
-            <img src="{{ asset('assets/images/coin/playdmc.jpg') }}" class="play-button">
+        <div class="col-md-6 col-sm-6 button-container" id="play_btc">
+            <figure><img src="{{ asset('assets/images/coin/playBTC.jpg') }}" class="play-button"></figure>
         </div>
-        <div class="col-md-6 col-sm-6" id="play_free">
-            <img src="{{ asset('assets/images/coin/playfree.jpg') }}" class="play-button">
+        <div class="col-md-6 col-sm-6 button-container" id="play_dmc">
+            <figure><img src="{{ asset('assets/images/coin/playdmc.jpg') }}" class="play-button"></figure>
         </div>
-        <div class="col-md-6 col-sm-6" id="play_oro">
-            <img src="{{ asset('assets/images/coin/playoro.jpg') }}" class="play-button">
+        <div class="col-md-6 col-sm-6 button-container" id="play_oro">
+            <figure><img src="{{ asset('assets/images/coin/playoro.jpg') }}" class="play-button"></figure>
         </div>
     </div>
     <div class="row" id="game_container" style="display: none;">
@@ -349,7 +367,7 @@
                         <tr>
                             <td class="text-center font-bold font-black">WAGER</td>
                             <td class="text-center font-black">
-                                <select id="wager1">
+                                <select id="wager1" class="wager-select">
                                     <option value="0" selected>0</option>
                                     <option value="1">1</option>
                                     <option value="2">2</option>
@@ -367,7 +385,7 @@
                                 </select>
                             </td>
                             <td class="text-center font-black">
-                                <select id="wager2">
+                                <select id="wager2" class="wager-select">
                                     <option value="0" selected>0</option>
                                     <option value="1">1</option>
                                     <option value="2">2</option>
@@ -385,7 +403,7 @@
                                 </select>
                             </td>
                             <td class="text-center font-black">
-                                <select id="wager3">
+                                <select id="wager3" class="wager-select">
                                     <option value="0" selected>0</option>
                                     <option value="1">1</option>
                                     <option value="2">2</option>
@@ -403,7 +421,7 @@
                                 </select>
                             </td>
                             <td class="text-center font-black">
-                                <select id="wager4">
+                                <select id="wager4" class="wager-select">
                                     <option value="0" selected>0</option>
                                     <option value="1">1</option>
                                     <option value="2">2</option>
@@ -421,7 +439,7 @@
                                 </select>
                             </td>
                             <td class="text-center font-black">
-                                <select id="wager5">
+                                <select id="wager5" class="wager-select">
                                     <option value="0" selected>0</option>
                                     <option value="1">1</option>
                                     <option value="2">2</option>
@@ -439,7 +457,7 @@
                                 </select>
                             </td>
                             <td class="text-center font-black">
-                                <select id="wager6">
+                                <select id="wager6" class="wager-select">
                                     <option value="0" selected>0</option>
                                     <option value="1">1</option>
                                     <option value="2">2</option>
@@ -457,7 +475,7 @@
                                 </select>
                             </td>
                             <td class="text-center font-black">
-                                <select id="wager7">
+                                <select id="wager7" class="wager-select">
                                     <option value="0" selected>0</option>
                                     <option value="1">1</option>
                                     <option value="2">2</option>
@@ -475,7 +493,7 @@
                                 </select>
                             </td>
                             <td class="text-center font-black">
-                                <select id="wager8">
+                                <select id="wager8" class="wager-select">
                                     <option value="0" selected>0</option>
                                     <option value="1">1</option>
                                     <option value="2">2</option>
@@ -493,7 +511,7 @@
                                 </select>
                             </td>
                             <td class="text-center font-black">
-                                <select id="wager9">
+                                <select id="wager9" class="wager-select">
                                     <option value="0" selected>0</option>
                                     <option value="1">1</option>
                                     <option value="2">2</option>
@@ -511,7 +529,7 @@
                                 </select>
                             </td>
                             <td class="text-center font-black">
-                                <select id="wager10">
+                                <select id="wager10" class="wager-select">
                                     <option value="0" selected>0</option>
                                     <option value="1">1</option>
                                     <option value="2">2</option>
@@ -576,7 +594,7 @@
             </div>
         </div>
         <div class="col-md-1"></div>
-        <button type="button" class="close" aria-label="Close" style="position: absolute; right: 14px; top: 58px; cursor: pointer;">
+        <button type="button" class="close" aria-label="Close" style="position: absolute; right: -2px; top: 41px; cursor: pointer;">
             <span class="danger" aria-hidden="true" style="font-size: 47px;color: red;">&times;</span>
         </button>
     </div>
@@ -715,6 +733,27 @@
         </div>
     </div>
 
+    {{--Balance Alert--}}
+    <div id="balance_alert" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header text-center">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h1 class="modal-title">Alert!</h1>
+                </div>
+                <div class="modal-body text-center">
+                    <h2 class="modal-title">You don't have enough coin.</h2>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
     <!--Copy Data -->
     <script type="text/javascript">
         document.getElementById("copybtn").onclick = function()
@@ -755,19 +794,34 @@
                     let wager = 0;
                     for(let index = 0 ; index < bets.length ; index ++) {
                         let bet = bets[index];
-                        totalList[bet.number - 1] += parseInt(bet.value);
-                        total += parseInt(bet.value);
+                        totalList[bet.number - 1] += parseFloat(bet.value);
+                        total += parseFloat(bet.value);
                         const id = parseInt('{{$currentUser->id}}');
                         if(id === parseInt(bet.id)) {
-                            wagerList[bet.number - 1] = parseInt(bet.value);
-                            wager += parseInt(bet.value);
+                            wagerList[bet.number - 1] = parseFloat(bet.value);
+                            wager += parseFloat(bet.value);
                         }
                     }
                     if(wager === 0){
                         return;
                     }
                     for (let index = 0; index < 10; index++) {
-                        winList[index] = ((wagerList[index] / totalList[index]) * total * 0.9) | 0;
+                        winList[index] = totalList[index] ? ((wagerList[index] / totalList[index]) * total * 0.9) : 0;
+                        const unit = $('#game_container').attr('data-unit');
+                        switch (unit) {
+                            case 'btc':
+                                winList[index] = winList[index].toFixed(4);
+                                break;
+                            case 'oro':
+                                winList[index] = winList[index].toFixed(0);
+                                break;
+                            case 'dmc':
+                                winList[index] = winList[index].toFixed(0);
+                                break;
+                            case 'free':
+                                winList[index] = winList[index].toFixed(2);
+                                break;
+                        }
                     }
                     const text = 'You got ' + winList[result['wining_number'] - 1] + ' ' + $('#game_container').attr('data-unit');
                     $('#earn_text').text(text);
@@ -788,15 +842,15 @@
                 let win = 0;
                 for(let index = 0 ; index < bets.length ; index ++) {
                     let bet = bets[index];
-                    totalList[bet.number - 1] += parseInt(bet.value);
-                    total += parseInt(bet.value);
-                    const id = parseInt('{{$currentUser->id}}');
-                    if(id !== parseInt(bet.id)) {
-                        othersList[bet.number - 1] += parseInt(bet.value);
-                        others += parseInt(bet.value);
+                    totalList[bet.number - 1] += parseFloat(bet.value);
+                    total += parseFloat(bet.value);
+                    const id = parseFloat('{{$currentUser->id}}');
+                    if(id !== parseFloat(bet.id)) {
+                        othersList[bet.number - 1] += parseFloat(bet.value);
+                        others += parseFloat(bet.value);
                     } else {
-                        wagerList[bet.number - 1] = parseInt(bet.value);
-                        wager += parseInt(bet.value);
+                        wagerList[bet.number - 1] = parseFloat(bet.value);
+                        wager += parseFloat(bet.value);
                     }
                 }
                 for (let index = 0; index < 10; index++) {
@@ -805,7 +859,22 @@
                     } else {
                         winPercentList[index] = (totalList[index] / total * 100) === 0 ? (totalList[index] / total * 100) : (totalList[index] / total * 100).toFixed(2);
                     }
-                    winList[index] = ((wagerList[index] / totalList[index]) * total * 0.9) | 0;
+                    winList[index] = totalList[index] ? ((wagerList[index] / totalList[index]) * total * 0.9) : 0;
+                    const unit = $('#game_container').attr('data-unit');
+                    switch (unit) {
+                        case 'btc':
+                            winList[index] = winList[index].toFixed(4);
+                            break;
+                        case 'oro':
+                            winList[index] = winList[index].toFixed(0);
+                            break;
+                        case 'dmc':
+                            winList[index] = winList[index].toFixed(0);
+                            break;
+                        case 'free':
+                            winList[index] = winList[index].toFixed(2);
+                            break;
+                    }
                 }
                 let differences = startedAt === null ? 0 : Date.now() - (new Date(startedAt).getTime() - (new Date(startedAt).getTimezoneOffset() * 60000));
                 differences = differences / 1000;
@@ -894,10 +963,11 @@
                                 data:{'coin': unit},
                                 success:function(data){
                                     if(data) {
+                                        const loading = $('#game_container').attr('data-loading');
                                         const bets = data.data;
                                         if(data.status !== 'ended') {
                                             const coin = $('#game_container').attr('data-unit');
-                                            if(data.coin !== coin) {
+                                            if(data.coin !== coin || loading === 'loading') {
                                                 return;
                                             }
                                             updateGameData(bets? JSON.parse(bets): [], data.status, data.started_at);
@@ -908,6 +978,33 @@
                                 }
                             });
                         }
+
+                        $.ajax({
+                            type:'get',
+                            url:'{{ route('user.getBalance') }}',
+                            data:{'id': {{$currentUser->id}}},
+                            success:function(balance){
+                                let cut = 0;
+                                switch (unit) {
+                                    case 'btc':
+                                        cut = 4;
+                                        break;
+                                    case 'oro':
+                                        cut = 0;
+                                        break;
+                                    case 'dmc':
+                                        cut = 0;
+                                        break;
+                                    case 'free':
+                                        cut = 2;
+                                        break;
+                                }
+                                $('#btc_balance_text').text(balance ? parseFloat(balance['btc_balance']).toFixed(cut): 0);
+                                $('#dmc_balance_text').text(balance ? parseFloat(balance['dmc_balance']).toFixed(cut): 0);
+                                $('#oro_balance_text').text(balance ? parseFloat(balance['oro_balance']).toFixed(cut): 0);
+                                $('#free_balance_text').text(balance ? parseFloat(balance['free_balance']).toFixed(cut): 0);
+                            }
+                        });
                     }, 1000);
                 };
                 socket.onclose = function(event) {
@@ -935,126 +1032,126 @@
                 };
             }
 
+            function wager(value, number) {
+                $('#game_container').attr('data-loading', 'loading');
+                const unit = $('#game_container').attr('data-unit');
+                if(unit) {
+                    $.ajax({
+                        type:'get',
+                        url:'{{ route('game.currentGame') }}',
+                        data:{'coin': unit},
+                        success:function(currentGame){
+                            let wager = 0;
+                            const id = parseInt('{{$currentUser->id}}');
+                            if(currentGame) {
+                                let bets = currentGame.data;
+                                if(currentGame.status !== 'ended') {
+                                    const coin = $('#game_container').attr('data-unit');
+                                    if(currentGame.coin !== coin) {
+                                        return;
+                                    }
+                                    bets = bets? JSON.parse(bets): [];
+                                    for(let index = 0 ; index < bets.length ; index ++) {
+                                        let bet = bets[index];
+                                        if(id === parseInt(bet.id)) {
+                                            wager += parseFloat(bet.value);
+                                        }
+                                    }
+                                }
+                            }
+                            const unit = $('#game_container').attr('data-unit');
+                            let currentBalance = 0;
+                            $.ajax({
+                                type:'get',
+                                url:'{{ route('user.getBalance') }}',
+                                data:{'id': {{$currentUser->id}}},
+                                success:function(balance){
+                                    if(balance) {
+                                        switch (unit) {
+                                            case 'btc':
+                                                currentBalance = balance ? balance['btc_balance']: 0;
+                                                break;
+                                            case 'dmc':
+                                                currentBalance = balance ? balance['dmc_balance']: 0;
+                                                break;
+                                            case 'oro':
+                                                currentBalance = balance ? balance['oro_balance']: 0;
+                                                break;
+                                            case 'free':
+                                                currentBalance = balance ? balance['free_balance']: 0;
+                                                break;
+                                            default:
+                                                currentBalance = 0;
+                                                return;
+                                        }
+                                        currentBalance = parseFloat(currentBalance);
+                                        const name = '{{$currentUser->username}}';
+                                        if(currentBalance < parseFloat(value) + wager) {
+                                            $("#balance_alert").modal('show');
+                                            setTimeout(function () {
+                                                $('#game_container').attr('data-loading', '');
+                                            }, 2000);
+                                            return;
+                                        }
+                                        socket.send( JSON.stringify({
+                                            id: id,
+                                            name: name,
+                                            number: number,
+                                            value: value,
+                                            unit: $('#game_container').attr('data-unit')
+                                        }) );
+                                        setTimeout(function () {
+                                            $('#game_container').attr('data-loading', '');
+                                        }, 2000);
+                                    }
+                                }
+                            });
+                        }
+                    });
+                }
+            }
+
             function initWager() {
                 $('#wager1').change(function () {
                     const data = $(this).val();
-                    const id = parseInt('{{$currentUser->id}}');
-                    const name = '{{$currentUser->username}}';
-                    socket.send( JSON.stringify({
-                        id: id,
-                        name: name,
-                        number: 1,
-                        value: data,
-                        unit: $('#game_container').attr('data-unit')
-                    }) );
+                    wager(data, 1);
+
                 });
                 $('#wager2').change(function () {
                     const data = $(this).val();
-                    const id = parseInt('{{$currentUser->id}}');
-                    const name = '{{$currentUser->username}}';
-                    socket.send( JSON.stringify({
-                        id: id,
-                        name: name,
-                        number: 2,
-                        value: data,
-                        unit: $('#game_container').attr('data-unit')
-                    }) );
+                    wager(data, 2);
                 });
                 $('#wager3').change(function () {
                     const data = $(this).val();
-                    const id = parseInt('{{$currentUser->id}}');
-                    const name = '{{$currentUser->username}}';
-                    socket.send( JSON.stringify({
-                        id: id,
-                        name: name,
-                        number: 3,
-                        value: data,
-                        unit: $('#game_container').attr('data-unit')
-                    }) );
+                    wager(data, 3);
                 });
                 $('#wager4').change(function () {
                     const data = $(this).val();
-                    const id = parseInt('{{$currentUser->id}}');
-                    const name = '{{$currentUser->username}}';
-                    socket.send( JSON.stringify({
-                        id: id,
-                        name: name,
-                        number: 4,
-                        value: data,
-                        unit: $('#game_container').attr('data-unit')
-                    }) );
+                    wager(data, 4);
                 });
                 $('#wager5').change(function () {
                     const data = $(this).val();
-                    const id = parseInt('{{$currentUser->id}}');
-                    const name = '{{$currentUser->username}}';
-                    socket.send( JSON.stringify({
-                        id: id,
-                        name: name,
-                        number: 5,
-                        value: data,
-                        unit: $('#game_container').attr('data-unit')
-                    }) );
+                    wager(data, 5);
                 });
                 $('#wager6').change(function () {
                     const data = $(this).val();
-                    const id = parseInt('{{$currentUser->id}}');
-                    const name = '{{$currentUser->username}}';
-                    socket.send( JSON.stringify({
-                        id: id,
-                        name: name,
-                        number: 6,
-                        value: data,
-                        unit: $('#game_container').attr('data-unit')
-                    }) );
+                    wager(data, 6);
                 });
                 $('#wager7').change(function () {
                     const data = $(this).val();
-                    const id = parseInt('{{$currentUser->id}}');
-                    const name = '{{$currentUser->username}}';
-                    socket.send( JSON.stringify({
-                        id: id,
-                        name: name,
-                        number: 7,
-                        value: data,
-                        unit: $('#game_container').attr('data-unit')
-                    }) );
+                    wager(data, 7);
                 });
                 $('#wager8').change(function () {
                     const data = $(this).val();
-                    const id = parseInt('{{$currentUser->id}}');
-                    const name = '{{$currentUser->username}}';
-                    socket.send( JSON.stringify({
-                        id: id,
-                        name: name,
-                        number: 8,
-                        value: data,
-                        unit: $('#game_container').attr('data-unit')
-                    }) );
+                    wager(data, 8);
                 });
                 $('#wager9').change(function () {
                     const data = $(this).val();
-                    const id = parseInt('{{$currentUser->id}}');
-                    const name = '{{$currentUser->username}}';
-                    socket.send( JSON.stringify({
-                        id: id,
-                        name: name,
-                        number: 9,
-                        value: data,
-                        unit: $('#game_container').attr('data-unit')
-                    }) );
+                    wager(data, 9);
                 });
                 $('#wager10').change(function () {
                     const data = $(this).val();
-                    const id = parseInt('{{$currentUser->id}}');
-                    const name = '{{$currentUser->username}}';
-                    socket.send( JSON.stringify({
-                        id: id,
-                        name: name,
-                        number: 10,
-                        value: data,
-                        unit: $('#game_container').attr('data-unit')
-                    }) );
+                    wager(data, 10);
                 });
             }
 
@@ -1065,6 +1162,7 @@
     <!--Currrency change Valu -->
     <script type="text/javascript">
         $(document).ready(function(){
+            $('.sidebar-minify-btn').click();
             $("#myselect").change(function(){
                 const a = $( "#myselect option:selected" ).val();
                 if(a === '1') {
@@ -1155,19 +1253,91 @@
             });
             $("#play_btc").click(function () {
                 hideClickButtons();
+                $("#btc_balance").show();
                 $('#game_container').attr('data-unit', 'btc');
+                $( ".wager-select" ).each(function( index ) {
+                    let mul = 1 / 10000;
+                    $(this).empty().append($('<option>', { value: 0 * mul, text : 0 * mul }));
+                    $(this).append($('<option>', { value: 1 * mul, text : 1 * mul }));
+                    $(this).append($('<option>', { value: 2 * mul, text : 2 * mul }));
+                    $(this).append($('<option>', { value: 5 * mul, text : 5 * mul }));
+                    $(this).append($('<option>', { value: 10 * mul, text : 10 * mul }));
+                    $(this).append($('<option>', { value: 25 * mul, text : 25 * mul }));
+                    $(this).append($('<option>', { value: 50 * mul, text : 50 * mul }));
+                    $(this).append($('<option>', { value: 100 * mul, text : 100 * mul }));
+                    $(this).append($('<option>', { value: 250 * mul, text : 250 * mul }));
+                    $(this).append($('<option>', { value: 500 * mul, text : 500 * mul }));
+                    $(this).append($('<option>', { value: 1000 * mul, text : 1000 * mul }));
+                    $(this).append($('<option>', { value: 2500 * mul, text : 2500 * mul }));
+                    $(this).append($('<option>', { value: 5000 * mul, text : 5000 * mul }));
+                    $(this).append($('<option>', { value: 10000 * mul, text : 10000 * mul }));
+                });
             });
             $("#play_dmc").click(function () {
                 hideClickButtons();
+                $("#dmc_balance").show();
                 $('#game_container').attr('data-unit', 'dmc');
+                $( ".wager-select" ).each(function( index ) {
+                    let mul = 100;
+                    $(this).empty().append($('<option>', { value: 0 * mul, text : 0 * mul }));
+                    $(this).append($('<option>', { value: 1 * mul, text : 1 * mul }));
+                    $(this).append($('<option>', { value: 2 * mul, text : 2 * mul }));
+                    $(this).append($('<option>', { value: 5 * mul, text : 5 * mul }));
+                    $(this).append($('<option>', { value: 10 * mul, text : 10 * mul }));
+                    $(this).append($('<option>', { value: 25 * mul, text : 25 * mul }));
+                    $(this).append($('<option>', { value: 50 * mul, text : 50 * mul }));
+                    $(this).append($('<option>', { value: 100 * mul, text : 100 * mul }));
+                    $(this).append($('<option>', { value: 250 * mul, text : 250 * mul }));
+                    $(this).append($('<option>', { value: 500 * mul, text : 500 * mul }));
+                    $(this).append($('<option>', { value: 1000 * mul, text : 1000 * mul }));
+                    $(this).append($('<option>', { value: 2500 * mul, text : 2500 * mul }));
+                    $(this).append($('<option>', { value: 5000 * mul, text : 5000 * mul }));
+                    $(this).append($('<option>', { value: 10000 * mul, text : 10000 * mul }));
+                });
             });
             $("#play_oro").click(function () {
                 hideClickButtons();
+                $("#oro_balance").show();
                 $('#game_container').attr('data-unit', 'oro');
+                $( ".wager-select" ).each(function( index ) {
+                    let mul = 1;
+                    $(this).empty().append($('<option>', { value: 0 * mul, text : 0 * mul }));
+                    $(this).append($('<option>', { value: 1 * mul, text : 1 * mul }));
+                    $(this).append($('<option>', { value: 2 * mul, text : 2 * mul }));
+                    $(this).append($('<option>', { value: 5 * mul, text : 5 * mul }));
+                    $(this).append($('<option>', { value: 10 * mul, text : 10 * mul }));
+                    $(this).append($('<option>', { value: 25 * mul, text : 25 * mul }));
+                    $(this).append($('<option>', { value: 50 * mul, text : 50 * mul }));
+                    $(this).append($('<option>', { value: 100 * mul, text : 100 * mul }));
+                    $(this).append($('<option>', { value: 250 * mul, text : 250 * mul }));
+                    $(this).append($('<option>', { value: 500 * mul, text : 500 * mul }));
+                    $(this).append($('<option>', { value: 1000 * mul, text : 1000 * mul }));
+                    $(this).append($('<option>', { value: 2500 * mul, text : 2500 * mul }));
+                    $(this).append($('<option>', { value: 5000 * mul, text : 5000 * mul }));
+                    $(this).append($('<option>', { value: 10000 * mul, text : 10000 * mul }));
+                });
             });
             $("#play_free").click(function () {
                 hideClickButtons();
+                $("#free_balance").show();
                 $('#game_container').attr('data-unit', 'free');
+                $( ".wager-select" ).each(function( index ) {
+                    let mul = 1/100;
+                    $(this).empty().append($('<option>', { value: 0 * mul, text : 0 * mul }));
+                    $(this).append($('<option>', { value: 1 * mul, text : 1 * mul }));
+                    $(this).append($('<option>', { value: 2 * mul, text : 2 * mul }));
+                    $(this).append($('<option>', { value: 5 * mul, text : 5 * mul }));
+                    $(this).append($('<option>', { value: 10 * mul, text : 10 * mul }));
+                    $(this).append($('<option>', { value: 25 * mul, text : 25 * mul }));
+                    $(this).append($('<option>', { value: 50 * mul, text : 50 * mul }));
+                    $(this).append($('<option>', { value: 100 * mul, text : 100 * mul }));
+                    $(this).append($('<option>', { value: 250 * mul, text : 250 * mul }));
+                    $(this).append($('<option>', { value: 500 * mul, text : 500 * mul }));
+                    $(this).append($('<option>', { value: 1000 * mul, text : 1000 * mul }));
+                    $(this).append($('<option>', { value: 2500 * mul, text : 2500 * mul }));
+                    $(this).append($('<option>', { value: 5000 * mul, text : 5000 * mul }));
+                    $(this).append($('<option>', { value: 10000 * mul, text : 10000 * mul }));
+                });
             });
             $(".close").click(function () {
                 $("#play_btc").show();
@@ -1175,6 +1345,10 @@
                 $("#play_dmc").show();
                 $("#play_oro").show();
                 $("#game_container").hide();
+                $("#btc_balance").hide();
+                $("#oro_balance").hide();
+                $("#dmc_balance").hide();
+                $("#free_balance").hide();
             });
 
             function hideClickButtons() {

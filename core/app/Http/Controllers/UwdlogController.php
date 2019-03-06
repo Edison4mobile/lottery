@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Balance;
 use Illuminate\Http\Request;
 use App\Uwdlog;
 use App\User;
@@ -215,6 +216,12 @@ class UwdlogController extends Controller
         }
 
         return back()->withSuccess('Mail Sent Successfuly');
+    }
+
+    public function getBalance(Request $request) {
+        $id = $request->id;
+        $balance = Balance::where('user_id', $id)->first();
+        return $balance;
     }
 
 }

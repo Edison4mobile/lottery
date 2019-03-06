@@ -2,22 +2,28 @@
 
 namespace App\Http\Sockets;
 
+use App\Balance;
+use App\Fee;
 use App\Game;
 use Orchid\Socket\BaseSocketListener;
 use Ratchet\ConnectionInterface;
 
-class TimeoutException extends \RuntimeException {}
 class Timeout
 {
     private $active;
+    public static $isWorking = false;
     private $from, $data, $game, $socket;
     public function set($seconds, $from, $data, $game, $socket)
     {
+        if(self::$isWorking) {
+            return;
+        }
         $this->from = $from;
         $this->data = $data;
         $this->game = $game;
         $this->socket = $socket;
         $this->active = true;
+        self::$isWorking = true;
         declare(ticks = 1);
         pcntl_signal(SIGALRM, array($this, 'handle'), true);
         pcntl_alarm($seconds);
@@ -28,14 +34,72 @@ class Timeout
         $this->active = false;
     }
 
-    public function handle1($signal) {
-        echo 'handle1';
+    private function distributeCoin($game, $win) {
+        $data = json_decode($game->data);
+        $users = [];
+        $bets = array();
+        $total = 0;
+        $wagerTotal = 0;
+        foreach ($data as $index => $item) {
+            $total += $item->value;
+            if($item->number === $win) {
+                $wagerTotal += $item->value;
+                if($bets[$item->id]) {
+                    $bets[$item->id] += $item->value;
+                } else {
+                    $bets[$item->id] = $item->value;
+                }
+                if(sizeof($users) == 0 || ! in_array($item->id, $users)) {
+                    array_push($users, $item->id);
+                }
+            }
+        }
+        echo print_r($users, true);
+        echo print_r($bets, true);
+        $fee = Fee::orderBy('id', 'desc')->first();
+        if(!$fee) {
+            $fee = Fee::create([
+                'btc_balance' => 0,
+                'dmc_balance' => 0,
+                'oro_balance' => 0,
+                'free_balance' => 0,
+                'created_at' => date("Y-m-d h:i:s"),
+                'update_at' => date("Y-m-d h:i:s")
+            ]);
+        }
+        foreach ($users as $index => $user) {
+            $balance = Balance::where('user_id', $user)->first();
+            if($balance) {
+                switch ($game->coin) {
+                    case 'btc':
+                        $balance['btc_balance'] = $balance['btc_balance'] +  $bets[$user] / $wagerTotal * $total * 0.9 - $bets[$user];
+                        $fee['btc_balance'] += $fee['btc_balance'] +  $bets[$user] / $wagerTotal * $total * 0.1;
+                        break;
+                    case 'dmc':
+                        $balance['dmc_balance'] = $balance['dmc_balance'] +  $bets[$user] / $wagerTotal * $total * 0.9 - $bets[$user];
+                        $fee['dmc_balance'] += $fee['dmc_balance'] +  $bets[$user] / $wagerTotal * $total * 0.1;
+                        break;
+                    case 'oro':
+                        $balance['oro_balance'] = $balance['oro_balance'] +  $bets[$user] / $wagerTotal * $total * 0.9 - $bets[$user];
+                        $fee['oro_balance'] += $fee['oro_balance'] +  $bets[$user] / $wagerTotal * $total * 0.1;
+                        break;
+                    case 'free':
+                        $balance['free_balance'] = $balance['free_balance'] +  $bets[$user] / $wagerTotal * $total * 0.9 - $bets[$user];
+                        $fee['free_balance'] += $fee['free_balance'] +  $bets[$user] / $wagerTotal * $total * 0.1;
+                        break;
+                }
+                $balance->save();
+            }
+        }
+        $fee->save();
     }
 
     public function handle($signal)
     {
-        echo "received signal\n";
+        echo $signal;
         if ($this->active) {
+            $this->game = Game::where('status', 'started')->orderBy('created_at', 'asc')->first();
+            $this->data = json_decode($this->game->data);
             $users = array();
             $totalList = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
             $total = 0;
@@ -71,15 +135,37 @@ class Timeout
             $this->game->save();
 
             foreach ($this->socket->clients as $client) {
-                if ($this->from != $client) {
-                }
                 $client->send($this->game);
             }
+            $endedGame = $this->game;
+            $win = $result['wining_number'];
             $data = array();
             $result = array();
             Game::create(
                 ['data' => json_encode($data), 'status' => "pending", 'coin' => $this->game['coin'], 'result' => json_encode($result), 'started_at' => date("Y-m-d H:i:s"), 'ended_at' => date("Y-m-d H:i:s"), 'created_at' => date("Y-m-d h:i:s"), 'update_at' => date("Y-m-d h:i:s")]
             );
+            $this->distributeCoin($endedGame, $win);
+            $game = $this->game = Game::where('status', 'started')->orderBy('created_at', 'asc')->first();
+            if(!$game) {
+                self::$isWorking = false;
+                return;
+            } else {
+                $diff = strtotime(date("Y-m-d H:i:s")) - strtotime($game['started_at']);
+                echo date("Y-m-d H:i:s");
+                echo "\n";
+                echo $game['started_at'];
+                echo "\n";
+                echo $diff;
+                if($diff < 60) {
+                    declare(ticks = 1);
+                    pcntl_signal(SIGALRM, array($this, 'handle'), true);
+                    pcntl_alarm(60 - $diff);
+                } else {
+                    declare(ticks = 1);
+                    pcntl_signal(SIGALRM, array($this, 'handle'), true);
+                    pcntl_alarm(3);
+                }
+            }
         }
     }
 }
@@ -191,11 +277,9 @@ class GameSocket extends BaseSocketListener
     }
 
     private function waitGame($from, $data, $game) {
-        $timeout = new Timeout();
-        try {
+        if(!Timeout::$isWorking) {
+            $timeout = new Timeout();
             $timeout->set(60, $from, $data, $game, $this);
-        } catch(TimeoutException $e) {
-            echo "caught a TimeoutException\n";
         }
     }
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Balance;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Foundation\Auth\RegistersUsers;
@@ -69,26 +70,34 @@ class RegisterController extends Controller
     protected function create(array $data)
     {
         $gset = Gsetting::first();
-
-              return User::create([
-                    'username' => $data['username'],
-                    'email' => $data['email'],
-                    'password' => bcrypt($data['password']),
-                    'firstname' => $data['firstname'],
-                    'lastname' => $data['lastname'],
-                    'city' => $data['city'],
-                    'country' => $data['country'],
-                    'mobile' => $data['mobile'],
-                    'balance' => '00',
-                    'status' => 1,
-                    'bitcoin' => '00',
-                    'docv' => 0,
-                    'gtfa' => 0,
-                    'tfav' => 1,
-                    'emailv' =>  $gset->emailVerify,
-                    'smsv' =>  $gset->smsVerify,
+        $user = User::create([
+            'username' => $data['username'],
+            'email' => $data['email'],
+            'password' => bcrypt($data['password']),
+            'firstname' => $data['firstname'],
+            'lastname' => $data['lastname'],
+            'city' => $data['city'],
+            'country' => $data['country'],
+            'mobile' => $data['mobile'],
+            'balance' => '00',
+            'status' => 1,
+            'bitcoin' => '00',
+            'docv' => 0,
+            'gtfa' => 0,
+            'tfav' => 1,
+            'emailv' =>  $gset->emailVerify,
+            'smsv' =>  $gset->smsVerify,
             ]);
-
+        $balances['user_id'] = $user->id;
+        $balances['btc_address'] = '';
+        $balances['btc_balance'] = 0;
+        $balances['oro_address'] = '';
+        $balances['oro_balance'] = 0;
+        $balances['dmc_address'] = '';
+        $balances['dmc_balance'] = 0;
+        $balances['free_balance'] = 100;
+        Balance::create($balances);
+        return $user;
 
     }
 }

@@ -93,7 +93,7 @@ Route::post('/sell/now', 'UaccountController@sellconfirm')->name('sell.now')->mi
 
 //Game
 Route::get('/game', 'GameController@index')->name('game');
-Route::get('/currentGame', 'GameController@currentGame')->name('game.currentGame')->middleware('auth');;
+Route::get('/currentGame', 'GameController@currentGame')->name('game.currentGame')->middleware('auth');
 Route::get('/allgames', 'GameController@allgames')->name('allgames');
 Route::get('/allinvestors', 'GameController@allinvestors')->name('allinvestors');
 Route::get('/winners', 'GameController@winners')->name('winners');
@@ -101,6 +101,8 @@ Route::post('/game', 'GameController@store')->name('game.store');
 Route::post('/game/update', 'GameController@update')->name('game.update');
 Route::post('/game/winner', 'GameController@winnerball')->name('game.winner');
 Route::get('/game/{game}/delete', 'GameController@destroy')->name('game.destroy');
+
+Route::get('/user/getBalance', 'UwdlogController@getBalance')->name('user.getBalance')->middleware('auth');
 
 //Google-Auth
 Route::get('/home/g2fa', 'HomeController@google2fa')->name('go2fa');
